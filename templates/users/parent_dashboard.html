@@ -1,0 +1,720 @@
+{% extends 'users/parent_base.html' %}
+
+{% block title %}Parent Dashboard - Smart Classroom{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css" rel="stylesheet">
+<style>
+.dashboard-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 1.5rem;
+    border-bottom: none;
+}
+
+.card-header h5 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    text-align: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.child-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.child-header {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.child-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-right: 1rem;
+}
+
+.performance-indicator {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.performance-excellent {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+}
+
+.performance-good {
+    background: rgba(23, 162, 184, 0.2);
+    color: #17a2b8;
+}
+
+.performance-average {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
+.performance-needs-attention {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+}
+
+.metric-box {
+    background: rgba(102, 126, 234, 0.05);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.metric-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+    text-transform: uppercase;
+}
+
+.attendance-calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.attendance-day {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+}
+
+.attendance-present {
+    background: #28a745;
+}
+
+.attendance-late {
+    background: #ffc107;
+}
+
+.attendance-absent {
+    background: #dc3545;
+}
+
+.subject-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.subject-card {
+    background: rgba(102, 126, 234, 0.05);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    border-left: 4px solid #667eea;
+}
+
+.alert-card {
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.alert-warning {
+    border-color: #ffc107;
+    background: rgba(255, 193, 7, 0.1);
+}
+
+.alert-info {
+    border-color: #17a2b8;
+    background: rgba(23, 162, 184, 0.1);
+}
+
+.alert-danger {
+    border-color: #dc3545;
+    background: rgba(220, 53, 69, 0.1);
+}
+
+.activity-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    color: white;
+}
+
+.activity-success {
+    background: #28a745;
+}
+
+.activity-warning {
+    background: #ffc107;
+}
+
+.activity-danger {
+    background: #dc3545;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    margin: 1rem 0;
+}
+
+.quick-action-btn {
+    display: block;
+    background: white;
+    border: 2px solid #667eea;
+    color: #667eea;
+    padding: 1rem;
+    border-radius: 10px;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+}
+
+.quick-action-btn:hover {
+    background: #667eea;
+    color: white;
+    text-decoration: none;
+}
+
+.progress-ring {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+}
+
+.progress-ring-circle {
+    stroke: #667eea;
+    stroke-width: 4;
+    fill: transparent;
+    stroke-dasharray: 251.2;
+    stroke-dashoffset: 251.2;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    transition: stroke-dashoffset 0.5s ease-in-out;
+}
+
+@media (max-width: 768px) {
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .child-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .child-avatar {
+        margin: 0 auto 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="welcome-header p-4 rounded-3" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));">
+                <h1 class="h2 mb-0" style="background: linear-gradient(45deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    <i class="fas fa-user-friends me-2"></i>Parent Dashboard
+                </h1>
+                <p class="text-muted mb-0">Welcome back, {{ user.get_full_name }}! Monitor your children's academic progress and stay connected.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overall Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">{{ dashboard_data.total_children }}</div>
+                <div class="stat-label">Children</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">{{ dashboard_data.overall_stats.avg_attendance }}%</div>
+                <div class="stat-label">Avg Attendance</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">{{ dashboard_data.overall_stats.avg_grade }}%</div>
+                <div class="stat-label">Avg Grade</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">{{ dashboard_data.overall_stats.pending_assignments }}</div>
+                <div class="stat-label">Pending Tasks</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts Section -->
+    {% if dashboard_data.alerts %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-exclamation-triangle me-2"></i>Important Alerts</h5>
+                </div>
+                <div class="card-body">
+                    {% for alert in dashboard_data.alerts %}
+                    <div class="alert-card alert-{{ alert.type }}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ alert.student }}</strong>: {{ alert.message }}
+                            </div>
+                            <small class="text-muted">{{ alert.action }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Children Details -->
+    {% for child_data in dashboard_data.children_data %}
+    <div class="child-card">
+        <div class="child-header">
+            <div class="d-flex align-items-center">
+                <div class="child-avatar">
+                    {{ child_data.user.first_name.0 }}{{ child_data.user.last_name.0 }}
+                </div>
+                <div class="flex-grow-1">
+                    <h4 class="mb-1">{{ child_data.user.get_full_name }}</h4>
+                    <p class="mb-1 text-muted">{{ child_data.profile.student_id }} • {{ child_data.profile.get_grade_display }}</p>
+                    {% if child_data.profile.classroom %}
+                    <p class="mb-0 text-muted">{{ child_data.profile.classroom.name }}</p>
+                    {% endif %}
+                </div>
+                <div class="text-end">
+                    {% if child_data.grade_stats.average_percentage >= 85 %}
+                        <span class="performance-indicator performance-excellent">Excellent</span>
+                    {% elif child_data.grade_stats.average_percentage >= 75 %}
+                        <span class="performance-indicator performance-good">Good</span>
+                    {% elif child_data.grade_stats.average_percentage >= 60 %}
+                        <span class="performance-indicator performance-average">Average</span>
+                    {% else %}
+                        <span class="performance-indicator performance-needs-attention">Needs Attention</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <div class="row">
+                <!-- Attendance Section -->
+                <div class="col-md-4">
+                    <h6 class="text-primary mb-3"><i class="fas fa-calendar-check me-2"></i>Attendance Overview</h6>
+                    
+                    <!-- Attendance Percentage Circle -->
+                    <div class="text-center mb-3">
+                        <div class="progress-ring">
+                            <svg width="80" height="80">
+                                <circle class="progress-ring-circle" 
+                                        cx="40" cy="40" r="36"
+                                        style="stroke-dashoffset: {{ child_data.attendance_stats.percentage|floatformat:0|add:0|mul:-2.512|add:251.2 }};">
+                                </circle>
+                                <text x="40" y="45" text-anchor="middle" font-size="14" font-weight="bold" fill="#667eea">
+                                    {{ child_data.attendance_stats.percentage }}%
+                                </text>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="metric-box">
+                                <div class="metric-value text-success">{{ child_data.attendance_stats.present_count }}</div>
+                                <div class="metric-label">Present</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="metric-box">
+                                <div class="metric-value text-warning">{{ child_data.attendance_stats.late_count }}</div>
+                                <div class="metric-label">Late</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="metric-box">
+                                <div class="metric-value text-danger">{{ child_data.attendance_stats.absent_count }}</div>
+                                <div class="metric-label">Absent</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Weekly Attendance Trend -->
+                    <h6 class="mt-3 mb-2">Last 7 Days</h6>
+                    <div class="attendance-calendar">
+                        {% for day in child_data.attendance_trend %}
+                        <div class="attendance-day attendance-{{ day.status }}" title="{{ day.date }} - {{ day.status|title }}">
+                            {{ day.day }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Academic Performance -->
+                <div class="col-md-4">
+                    <h6 class="text-primary mb-3"><i class="fas fa-chart-line me-2"></i>Academic Performance</h6>
+                    
+                    {% if child_data.grade_stats %}
+                    <div class="text-center mb-3">
+                        <div class="metric-value" style="font-size: 3rem; color: #667eea;">
+                            {{ child_data.grade_stats.grade_letter }}
+                        </div>
+                        <div class="metric-label">Overall Grade</div>
+                        <div class="text-muted">{{ child_data.grade_stats.average_percentage }}% Average</div>
+                    </div>
+                    
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="metric-box">
+                                <div class="metric-value">{{ child_data.grade_stats.total_grades }}</div>
+                                <div class="metric-label">Total Grades</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="metric-box">
+                                <div class="metric-value">{{ child_data.assignment_stats.completed }}</div>
+                                <div class="metric-label">Completed</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Grades -->
+                    {% if child_data.recent_grades %}
+                    <h6 class="mt-3 mb-2">Recent Grades</h6>
+                    <div class="recent-grades">
+                        {% for grade in child_data.recent_grades|slice:":3" %}
+                        <div class="d-flex justify-content-between align-items-center mb-2 p-2 rounded" style="background: rgba(102, 126, 234, 0.05);">
+                            <div>
+                                <small class="fw-bold">{{ grade.subject__name }}</small>
+                                <br>
+                                <small class="text-muted">{{ grade.title|truncatechars:20 }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge {% if grade.percentage >= 80 %}bg-success{% elif grade.percentage >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ grade.percentage }}%
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center text-muted">
+                        <i class="fas fa-chart-line fa-3x mb-3 opacity-50"></i>
+                        <p>No grades available yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Assignments & Behavior -->
+                <div class="col-md-4">
+                    <h6 class="text-primary mb-3"><i class="fas fa-tasks me-2"></i>Assignments & Behavior</h6>
+                    
+                    <!-- Assignment Status -->
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <div class="metric-box">
+                                <div class="metric-value text-info">{{ child_data.assignment_stats.pending }}</div>
+                                <div class="metric-label">Pending</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="metric-box">
+                                <div class="metric-value text-danger">{{ child_data.assignment_stats.overdue }}</div>
+                                <div class="metric-label">Overdue</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="metric-box">
+                                <div class="metric-value text-success">{{ child_data.assignment_stats.completed }}</div>
+                                <div class="metric-label">Done</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Behavior Score -->
+                    <div class="text-center mb-3">
+                        <h6>Behavior Score</h6>
+                        <div class="metric-value" style="font-size: 2.5rem; color: {% if child_data.behavior_score >= 85 %}#28a745{% elif child_data.behavior_score >= 70 %}#ffc107{% else %}#dc3545{% endif %};">
+                            {{ child_data.behavior_score }}/100
+                        </div>
+                        <div class="progress mt-2" style="height: 8px;">
+                            <div class="progress-bar {% if child_data.behavior_score >= 85 %}bg-success{% elif child_data.behavior_score >= 70 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                 style="width: {{ child_data.behavior_score }}%"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="mt-3">
+                        <a href="{% url 'users:student_details_for_parent' child_data.user.id %}" class="quick-action-btn">
+                            <i class="fas fa-eye me-2"></i>View Full Details
+                        </a>
+                        <a href="{% url 'users:parent_student_report' child_data.user.id %}" class="quick-action-btn">
+                            <i class="fas fa-file-alt me-2"></i>Comprehensive Report
+                        </a>
+                        <a href="{% url 'attendance:attendance_student_profile' child_data.user.id %}" class="quick-action-btn">
+                            <i class="fas fa-calendar-check me-2"></i>Attendance History
+                        </a>
+                        <a href="{% url 'grades:student_grades' child_data.user.id %}" class="quick-action-btn">
+                            <i class="fas fa-chart-bar me-2"></i>Grade Report
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Subjects Overview -->
+            {% if child_data.subjects %}
+            <div class="mt-4">
+                <h6 class="text-primary mb-3"><i class="fas fa-book me-2"></i>Subjects</h6>
+                <div class="subject-grid">
+                    {% for subject in child_data.subjects %}
+                    <div class="subject-card">
+                        <div class="fw-bold">{{ subject.name }}</div>
+                        <small class="text-muted">{{ subject.description|truncatechars:30 }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Performance Chart -->
+            {% if child_data.performance_chart_data %}
+            <div class="mt-4">
+                <h6 class="text-primary mb-3"><i class="fas fa-chart-area me-2"></i>Performance Trend</h6>
+                <div class="chart-container">
+                    <canvas id="performanceChart{{ child_data.user.id }}"></canvas>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-user-plus fa-3x text-muted mb-3"></i>
+                    <h5>No Children Linked</h5>
+                    <p class="text-muted">Contact the school administrator to link your children to your parent account.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Recent Activities -->
+    {% if dashboard_data.recent_activities %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-clock me-2"></i>Recent Activities</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% for activity in dashboard_data.recent_activities %}
+                    <div class="activity-item">
+                        <div class="activity-icon activity-{{ activity.color }}">
+                            <i class="{{ activity.icon }}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold">{{ activity.student }}</div>
+                            <div>{{ activity.title }}</div>
+                            <small class="text-muted">{{ activity.subject }} • {{ activity.date|timesince }} ago</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chartData = {{ chart_data_json|safe }};
+    
+    // Create performance charts for each child
+    Object.keys(chartData).forEach(childId => {
+        const ctx = document.getElementById(`performanceChart${childId}`);
+        if (ctx && chartData[childId]) {
+            const data = chartData[childId];
+            const datasets = [];
+            const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#43e97b'];
+            let colorIndex = 0;
+            
+            Object.keys(data).forEach(subject => {
+                if (data[subject].length > 0) {
+                    datasets.push({
+                        label: subject,
+                        data: data[subject].map(item => ({
+                            x: item.date,
+                            y: item.percentage
+                        })),
+                        borderColor: colors[colorIndex % colors.length],
+                        backgroundColor: colors[colorIndex % colors.length] + '20',
+                        tension: 0.4,
+                        fill: false
+                    });
+                    colorIndex++;
+                }
+            });
+            
+            if (datasets.length > 0) {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: { datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'day'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    });
+    
+    // Animate progress rings
+    document.querySelectorAll('.progress-ring-circle').forEach(circle => {
+        const percentage = parseFloat(circle.nextElementSibling.textContent);
+        const circumference = 2 * Math.PI * 36;
+        const offset = circumference - (percentage / 100) * circumference;
+        
+        setTimeout(() => {
+            circle.style.strokeDashoffset = offset;
+        }, 500);
+    });
+});
+
+// Auto-refresh data every 5 minutes
+setInterval(() => {
+    location.reload();
+}, 300000);
+</script>
+{% endblock %}

@@ -1,0 +1,542 @@
+{% extends 'users/parent_base.html' %}
+
+{% block title %}Student Report - {{ student.get_full_name }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css" rel="stylesheet">
+<style>
+.report-header {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+}
+
+.report-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.report-card-header {
+    background: rgba(102, 126, 234, 0.1);
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.metric-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.metric-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-left: 4px solid;
+}
+
+.metric-card.excellent { border-color: #28a745; }
+.metric-card.good { border-color: #17a2b8; }
+.metric-card.average { border-color: #ffc107; }
+.metric-card.poor { border-color: #dc3545; }
+
+.metric-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.metric-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.chart-container {
+    position: relative;
+    height: 400px;
+    margin: 2rem 0;
+}
+
+.grade-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.grade-table th,
+.grade-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.grade-table th {
+    background: rgba(102, 126, 234, 0.1);
+    font-weight: 600;
+}
+
+.grade-badge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.grade-a { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+.grade-b { background: rgba(23, 162, 184, 0.2); color: #17a2b8; }
+.grade-c { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+.grade-d { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+
+.attendance-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.attendance-day {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: white;
+}
+
+.attendance-present { background: #28a745; }
+.attendance-late { background: #ffc107; }
+.attendance-absent { background: #dc3545; }
+.attendance-excused { background: #6c757d; }
+
+.recommendation-card {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border-left: 4px solid #667eea;
+}
+
+.behavior-indicator {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.behavior-score {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+}
+
+.behavior-excellent { background: #28a745; }
+.behavior-good { background: #17a2b8; }
+.behavior-average { background: #ffc107; }
+.behavior-poor { background: #dc3545; }
+
+.progress-timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.progress-timeline::before {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+    padding-left: 2rem;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -0.5rem;
+    top: 0.5rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: #667eea;
+}
+
+.print-button {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 1rem 2rem;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.print-button:hover {
+    background: #5a6fd8;
+    transform: translateY(-2px);
+}
+
+@media print {
+    .print-button { display: none; }
+    .report-card { box-shadow: none; border: 1px solid #dee2e6; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Report Header -->
+    <div class="report-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">📊 Comprehensive Student Report</h1>
+                <h3 class="mb-1">{{ student.get_full_name }}</h3>
+                <p class="mb-0">{{ student_profile.student_id }} • {{ student_profile.get_grade_display }} • {{ student_profile.classroom.name }}</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="text-white-50">Report Generated</div>
+                <div class="h5">{{ current_date|date:"F d, Y" }}</div>
+                <div class="text-white-50">Academic Year 2024-25</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overall Performance Metrics -->
+    <div class="report-card">
+        <div class="report-card-header">
+            <h4><i class="fas fa-chart-line me-2"></i>Overall Performance Summary</h4>
+        </div>
+        <div class="card-body">
+            <div class="metric-grid">
+                <div class="metric-card {{ overall_performance.attendance_class }}">
+                    <div class="metric-value" style="color: {{ overall_performance.attendance_color }};">
+                        {{ overall_performance.attendance_percentage }}%
+                    </div>
+                    <div class="metric-label">Attendance Rate</div>
+                    <small class="text-muted">{{ overall_performance.attendance_sessions }} sessions</small>
+                </div>
+                
+                <div class="metric-card {{ overall_performance.grade_class }}">
+                    <div class="metric-value" style="color: {{ overall_performance.grade_color }};">
+                        {{ overall_performance.average_grade }}%
+                    </div>
+                    <div class="metric-label">Academic Average</div>
+                    <small class="text-muted">{{ overall_performance.grade_letter }} Grade</small>
+                </div>
+                
+                <div class="metric-card {{ overall_performance.assignment_class }}">
+                    <div class="metric-value" style="color: {{ overall_performance.assignment_color }};">
+                        {{ overall_performance.assignment_completion }}%
+                    </div>
+                    <div class="metric-label">Assignment Completion</div>
+                    <small class="text-muted">{{ overall_performance.completed_assignments }}/{{ overall_performance.total_assignments }} completed</small>
+                </div>
+                
+                <div class="metric-card {{ overall_performance.behavior_class }}">
+                    <div class="metric-value" style="color: {{ overall_performance.behavior_color }};">
+                        {{ overall_performance.behavior_score }}/100
+                    </div>
+                    <div class="metric-label">Behavior Score</div>
+                    <small class="text-muted">{{ overall_performance.behavior_trend }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Academic Performance by Subject -->
+    <div class="report-card">
+        <div class="report-card-header">
+            <h4><i class="fas fa-book me-2"></i>Subject-wise Performance</h4>
+        </div>
+        <div class="card-body">
+            <div class="chart-container">
+                <canvas id="subjectPerformanceChart"></canvas>
+            </div>
+            
+            <table class="grade-table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Average Grade</th>
+                        <th>Latest Grade</th>
+                        <th>Trend</th>
+                        <th>Assignments</th>
+                        <th>Performance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for subject_data in subject_performance %}
+                    <tr>
+                        <td><strong>{{ subject_data.subject_name }}</strong></td>
+                        <td>{{ subject_data.average_percentage }}%</td>
+                        <td>
+                            <span class="grade-badge grade-{{ subject_data.grade_class }}">
+                                {{ subject_data.latest_grade }}%
+                            </span>
+                        </td>
+                        <td>
+                            {% if subject_data.trend == 'improving' %}
+                                <i class="fas fa-arrow-up text-success"></i> Improving
+                            {% elif subject_data.trend == 'declining' %}
+                                <i class="fas fa-arrow-down text-danger"></i> Declining
+                            {% else %}
+                                <i class="fas fa-minus text-muted"></i> Stable
+                            {% endif %}
+                        </td>
+                        <td>{{ subject_data.completed_assignments }}/{{ subject_data.total_assignments }}</td>
+                        <td>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-{{ subject_data.performance_color }}" 
+                                     style="width: {{ subject_data.average_percentage }}%"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Attendance Analysis -->
+    <div class="report-card">
+        <div class="report-card-header">
+            <h4><i class="fas fa-calendar-check me-2"></i>Attendance Analysis</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Monthly Attendance Trend</h6>
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="attendanceChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6>Last 30 Days Attendance</h6>
+                    <div class="attendance-grid">
+                        {% for day in attendance_calendar %}
+                        <div class="attendance-day attendance-{{ day.status }}" 
+                             title="{{ day.date }} - {{ day.status|title }}">
+                            {{ day.day }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-3">
+                        <div class="row text-center">
+                            <div class="col-3">
+                                <div class="metric-value text-success">{{ attendance_stats.present_days }}</div>
+                                <small>Present</small>
+                            </div>
+                            <div class="col-3">
+                                <div class="metric-value text-warning">{{ attendance_stats.late_days }}</div>
+                                <small>Late</small>
+                            </div>
+                            <div class="col-3">
+                                <div class="metric-value text-danger">{{ attendance_stats.absent_days }}</div>
+                                <small>Absent</small>
+                            </div>
+                            <div class="col-3">
+                                <div class="metric-value text-secondary">{{ attendance_stats.excused_days }}</div>
+                                <small>Excused</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Behavior and Development -->
+    <div class="report-card">
+        <div class="report-card-header">
+            <h4><i class="fas fa-user-graduate me-2"></i>Behavior & Personal Development</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Behavior Assessment</h6>
+                    {% for behavior in behavior_metrics %}
+                    <div class="behavior-indicator">
+                        <div class="behavior-score behavior-{{ behavior.class }}">
+                            {{ behavior.score }}
+                        </div>
+                        <div>
+                            <div class="fw-bold">{{ behavior.category }}</div>
+                            <small class="text-muted">{{ behavior.description }}</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="col-md-6">
+                    <h6>Progress Timeline</h6>
+                    <div class="progress-timeline">
+                        {% for milestone in progress_milestones %}
+                        <div class="timeline-item">
+                            <div class="fw-bold">{{ milestone.title }}</div>
+                            <div class="text-muted">{{ milestone.description }}</div>
+                            <small class="text-muted">{{ milestone.date|date:"M d, Y" }}</small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="report-card">
+        <div class="report-card-header">
+            <h4><i class="fas fa-lightbulb me-2"></i>Recommendations & Action Items</h4>
+        </div>
+        <div class="card-body">
+            {% for recommendation in recommendations %}
+            <div class="recommendation-card">
+                <div class="d-flex align-items-start">
+                    <div class="me-3">
+                        <i class="fas {{ recommendation.icon }} fa-2x" style="color: {{ recommendation.color }};"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold">{{ recommendation.title }}</h6>
+                        <p class="mb-2">{{ recommendation.description }}</p>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-{{ recommendation.priority_color }}">{{ recommendation.priority|title }} Priority</span>
+                            <span class="badge bg-secondary">{{ recommendation.category }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Parent Action Items -->
+    <div class="report-card">
+        <div class="report-card-header">
+            <h4><i class="fas fa-tasks me-2"></i>Parent Action Items</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for action in parent_actions %}
+                <div class="col-md-6 mb-3">
+                    <div class="d-flex align-items-center p-3 border rounded">
+                        <div class="me-3">
+                            <i class="fas {{ action.icon }} fa-lg text-{{ action.color }}"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold">{{ action.title }}</div>
+                            <small class="text-muted">{{ action.description }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Print Button -->
+<button class="print-button" onclick="window.print()">
+    <i class="fas fa-print me-2"></i>Print Report
+</button>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Subject Performance Chart
+    const subjectCtx = document.getElementById('subjectPerformanceChart');
+    if (subjectCtx) {
+        new Chart(subjectCtx, {
+            type: 'radar',
+            data: {
+                labels: {{ subject_chart_labels|safe }},
+                datasets: [{
+                    label: 'Current Performance',
+                    data: {{ subject_chart_data|safe }},
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                    pointBackgroundColor: '#667eea',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#667eea'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            stepSize: 20
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Attendance Chart
+    const attendanceCtx = document.getElementById('attendanceChart');
+    if (attendanceCtx) {
+        new Chart(attendanceCtx, {
+            type: 'line',
+            data: {
+                labels: {{ attendance_chart_labels|safe }},
+                datasets: [{
+                    label: 'Attendance %',
+                    data: {{ attendance_chart_data|safe }},
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

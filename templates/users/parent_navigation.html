@@ -1,0 +1,260 @@
+<!-- Parent-specific navigation menu -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'users:parent_dashboard' %}">
+            <i class="fas fa-graduation-cap me-2"></i>Smart Classroom - Parent Portal
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#parentNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="parentNavbar">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'parent_dashboard' %}active{% endif %}" 
+                       href="{% url 'users:parent_dashboard' %}">
+                        <i class="fas fa-home me-1"></i>Dashboard
+                    </a>
+                </li>
+                
+                <!-- Children Dropdown -->
+                {% if user.parent_profile.students.all %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="childrenDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-users me-1"></i>My Children
+                    </a>
+                    <ul class="dropdown-menu">
+                        {% for student_profile in user.parent_profile.students.all %}
+                        <li>
+                            <h6 class="dropdown-header">{{ student_profile.user.get_full_name }}</h6>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'users:student_details_for_parent' student_profile.user.id %}">
+                                <i class="fas fa-eye me-1"></i>View Details
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'users:parent_student_report' student_profile.user.id %}">
+                                <i class="fas fa-file-alt me-1"></i>Full Report
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'attendance:attendance_student_profile' student_profile.user.id %}">
+                                <i class="fas fa-calendar-check me-1"></i>Attendance
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'grades:student_grades' student_profile.user.id %}">
+                                <i class="fas fa-chart-bar me-1"></i>Grades
+                            </a>
+                        </li>
+                        {% if not forloop.last %}<li><hr class="dropdown-divider"></li>{% endif %}
+                        {% endfor %}
+                    </ul>
+                </li>
+                {% endif %}
+                
+                <!-- Communication -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="communicationDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-comments me-1"></i>Communication
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="alert('Messages feature coming soon!')">
+                                <i class="fas fa-envelope me-1"></i>Messages
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="alert('Announcements feature coming soon!')">
+                                <i class="fas fa-bullhorn me-1"></i>Announcements
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="alert('Parent-Teacher meetings feature coming soon!')">
+                                <i class="fas fa-handshake me-1"></i>Schedule Meeting
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
+                <!-- Resources -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="resourcesDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-book me-1"></i>Resources
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="alert('Study materials feature coming soon!')">
+                                <i class="fas fa-book-open me-1"></i>Study Materials
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="alert('Calendar feature coming soon!')">
+                                <i class="fas fa-calendar me-1"></i>Academic Calendar
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="alert('Homework tracker feature coming soon!')">
+                                <i class="fas fa-tasks me-1"></i>Homework Tracker
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            
+            <!-- User Menu -->
+            <ul class="navbar-nav">
+                <!-- Notifications -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link position-relative" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-bell"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            3
+                            <span class="visually-hidden">unread notifications</span>
+                        </span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" style="width: 300px;">
+                        <li><h6 class="dropdown-header">Recent Notifications</h6></li>
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-exclamation-triangle text-warning"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-2">
+                                        <div class="fw-bold">Assignment Due</div>
+                                        <small class="text-muted">Math homework due tomorrow</small>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-check-circle text-success"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-2">
+                                        <div class="fw-bold">Grade Updated</div>
+                                        <small class="text-muted">Physics test: 85%</small>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-calendar text-info"></i>
+                                    </div>
+                                    <div class="flex-grow-1 ms-2">
+                                        <div class="fw-bold">Meeting Scheduled</div>
+                                        <small class="text-muted">Parent-teacher meeting Friday</small>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-center" href="#" onclick="alert('All notifications feature coming soon!')">
+                                View All Notifications
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
+                <!-- User Profile -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle me-1"></i>{{ user.get_full_name }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'users:profile' %}">
+                                <i class="fas fa-user me-1"></i>My Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="alert('Settings feature coming soon!')">
+                                <i class="fas fa-cog me-1"></i>Settings
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="alert('Notification preferences feature coming soon!')">
+                                <i class="fas fa-bell me-1"></i>Notifications
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt me-1"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Breadcrumb for parent pages -->
+<nav aria-label="breadcrumb" class="bg-light py-2">
+    <div class="container-fluid">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item">
+                <a href="{% url 'users:parent_dashboard' %}">
+                    <i class="fas fa-home me-1"></i>Dashboard
+                </a>
+            </li>
+            {% block breadcrumb %}{% endblock %}
+        </ol>
+    </div>
+</nav>
+
+<style>
+.navbar-nav .dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.dropdown-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(102, 126, 234, 0.1);
+}
+
+.dropdown-header {
+    color: #667eea;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+.navbar-brand {
+    font-weight: 600;
+}
+
+.nav-link.active {
+    background-color: rgba(255,255,255,0.2);
+    border-radius: 5px;
+}
+
+.breadcrumb-item a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+    color: #5a6fd8;
+}
+</style>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart Classroom - Parent Portal{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    {% block extra_css %}{% endblock %}
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-content {
+            min-height: calc(100vh - 200px);
+            padding: 2rem 0;
+        }
+        
+        .footer {
+            background: #343a40;
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        
+        /* Parent-specific styling */
+        .parent-portal {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+        }
+        
+        .alert-parent {
+            border-left: 4px solid #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            border-color: rgba(102, 126, 234, 0.2);
+        }
+        
+        .btn-parent-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+        }
+        
+        .btn-parent-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8, #6a4190);
+            color: white;
+        }
+        
+        .card-parent {
+            border: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 15px;
+        }
+        
+        .text-parent-primary {
+            color: #667eea !important;
+        }
+        
+        .bg-parent-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2) !important;
+        }
+    </style>
+</head>
+<body class="parent-portal">
+    <!-- Navigation -->
+    {% include 'users/parent_navigation.html' %}
+    
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container-fluid mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {% if message.tags == 'error' %}
+                <i class="fas fa-exclamation-triangle me-2"></i>
+            {% elif message.tags == 'success' %}
+                <i class="fas fa-check-circle me-2"></i>
+            {% elif message.tags == 'warning' %}
+                <i class="fas fa-exclamation-circle me-2"></i>
+            {% elif message.tags == 'info' %}
+                <i class="fas fa-info-circle me-2"></i>
+            {% endif %}
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-graduation-cap me-2"></i>Smart Classroom</h5>
+                    <p class="mb-0">Parent Portal - Stay connected with your child's education</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p class="mb-0">
+                        <small class="text-muted">
+                            For support, contact: 
+                            <a href="mailto:support@smartclassroom.edu" class="text-light">support@smartclassroom.edu</a>
+                        </small>
+                    </p>
+                    <p class="mb-0">
+                        <small class="text-muted">
+                            Emergency: <a href="tel:+1234567890" class="text-light">(123) 456-7890</a>
+                        </small>
+                    </p>
+                </div>
+            </div>
+            <hr class="my-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <small class="text-muted">
+                        © 2024 Smart Classroom. All rights reserved. | 
+                        <a href="#" class="text-light">Privacy Policy</a> | 
+                        <a href="#" class="text-light">Terms of Service</a>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Parent Portal specific JS -->
+    <script>
+        // Auto-hide alerts after 5 seconds
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                if (alert.classList.contains('alert-success') || alert.classList.contains('alert-info')) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            });
+        }, 5000);
+        
+        // Confirm logout
+        document.addEventListener('DOMContentLoaded', function() {
+            const logoutLink = document.querySelector('a[href*="logout"]');
+            if (logoutLink) {
+                logoutLink.addEventListener('click', function(e) {
+                    if (!confirm('Are you sure you want to logout?')) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        });
+        
+        // Add loading states to buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    if (this.type === 'submit' || this.href) {
+                        this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
+                        this.disabled = true;
+                    }
+                });
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
