@@ -57,3 +57,8 @@ source Env/bin/activate
 
 python manage.py makemigrations
 python manage.py migrate
+
+python create_demo_accounts.py
+python comprehensive_data_expansion.py
+
+python manage.py runserver
